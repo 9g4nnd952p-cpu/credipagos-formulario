@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrediPagos - Solicitud</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Inter',sans-serif}body{background:#0A0A0A}.dashed-box{background:#F2F0F0;border:2px dashed #9A9A9A}.input-field{border:1.5px solid #D1D1D1;background:#fff;width:100%;padding:12px 14px;border-radius:12px;font-size:14px}.input-field:focus{border-color:#4A1515;outline:none}.file-btn{background:#4A1515;color:white;padding:8px 16px;border-radius:999px;font-size:12px;font-weight:600}
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3">
+<div class="w-full max-w-[480px] bg-white rounded-[24px] p-6 shadow-2xl">
+<div class="flex justify-center mb-2 pt-2"><img src="logo.png" alt="CrediPagos" style="width:170px;height:auto;object-fit:contain"></div>
+<p class="text-center text-xs text-gray-500 mb-2 mt-3">Paso <span id="pasoNum">1</span> de 5</p>
+<div class="h-2 bg-gray-200 rounded-full mb-6"><div id="bar" class="h-2 bg-[#4A1515] rounded-full transition-all" style="width:20%"></div></div>
+
+<div id="s1" class="step">
+<h2 class="font-bold text-lg mb-4">Datos Personales</h2>
+<input id="nombre" class="input-field mb-2" placeholder="Nombre(s)">
+<div class="flex gap-2 mb-2"><input id="apP" class="input-field" placeholder="Apellido Paterno"><input id="apM" class="input-field" placeholder="Apellido Materno"></div>
+<input id="tel" class="input-field mb-2" placeholder="Teléfono - 10 dígitos">
+<select id="monto" class="input-field mb-1 font-semibold"><option value="">Monto a solicitar</option><option value="2000">$2,000.00</option><option value="3000">$3,000.00</option><option value="4000">$4,000.00</option><option value="5000">$5,000.00</option><option value="6000">$6,000.00</option><option value="7000">$7,000.00</option><option value="8000">$8,000.00</option><option value="9000">$9,000.00</option><option value="10000">$10,000.00</option></select>
+<p class="text-[11px] text-[#4A1515] italic font-semibold mb-4 ml-1">* Monto sujeto a aprobación y capacidad de pago.</p>
+<label class="dashed-box rounded-[16px] p-4 flex items-center justify-between mb-3 cursor-pointer"><div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-lg flex items-center justify-center border">📄</div><div><p class="font-bold text-[14px]">INE frente</p></div></div><div id="b1" class="file-btn"><input type="file" id="ine1" accept="image/*" class="hidden" onchange="ok('b1')">Subir ☁️</div></label>
+<label class="dashed-box rounded-[16px] p-4 flex items-center justify-between mb-3 cursor-pointer"><div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-lg flex items-center justify-center border">📄</div><div><p class="font-bold text-[14px]">INE reverso</p></div></div><div id="b2" class="file-btn"><input type="file" id="ine2" accept="image/*" class="hidden" onchange="ok('b2')">Subir ☁️</div></label>
+<label class="dashed-box rounded-[16px] p-4 flex items-center justify-between mb-4 cursor-pointer"><div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-lg flex items-center justify-center border">🏠</div><div><p class="font-bold text-[13px]">Comprobante de Domicilio</p></div></div><div id="b3" class="file-btn"><input type="file" id="comp" accept="image/*" class="hidden" onchange="ok('b3')">Subir ☁️</div></label>
+<button onclick="nextStep(2)" class="w-full bg-[#4A1515] text-white p-4 rounded-full font-bold">Continuar →</button>
+</div>
+
+<div id="s2" class="step hidden">
+<h2 class="font-bold text-lg mb-3">Domicilio</h2>
+<input id="calle" class="input-field mb-2" placeholder="Calle">
+<div class="flex gap-2 mb-2"><input id="numero" class="input-field" placeholder="Número"><input id="colonia" class="input-field" placeholder="Colonia"></div>
+<input id="cp" class="input-field mb-2" placeholder="Código Postal" type="number">
+<select id="estado" class="input-field mb-2 font-semibold" onchange="cargarMunicipios()"><option value="">Selecciona Estado</option></select>
+<select id="municipio" class="input-field mb-2" disabled><option value="">Primero elige un Estado</option></select>
+<textarea id="refDom" class="input-field mb-2" placeholder="Referencias para ubicar domicilio"></textarea>
+<input id="ocup" class="input-field mb-2" placeholder="Ocupación"><input id="ingreso" type="number" class="input-field mb-2" placeholder="Ingreso Semanal $"><input id="dirTrab" class="input-field mb-2" placeholder="Dirección de Trabajo"><input id="antig" class="input-field mb-4" placeholder="Antigüedad">
+<div class="flex gap-2"><button onclick="nextStep(1)" class="w-1/3 bg-zinc-100 p-4 rounded-full">Atrás</button><button onclick="nextStep(3)" class="flex-1 bg-[#4A1515] text-white p-4 rounded-full font-bold">Continuar</button></div>
+</div>
+
+<div id="s3" class="step hidden">
+<h2 class="font-bold text-lg mb-3">Referencias</h2>
+<input id="r1nom" class="input-field mb-2" placeholder="Referencia 1 - Nombre Completo "><input id="r1tel" class="input-field mb-4" placeholder="Teléfono">
+<input id="r2nom" class="input-field mb-2" placeholder="Referencia 2 - Nombre Completo "><input id="r2tel" class="input-field mb-4" placeholder="Teléfono">
+<div class="flex gap-2"><button onclick="nextStep(2)" class="w-1/3 bg-zinc-100 p-4 rounded-full">Atrás</button><button onclick="nextStep(4)" class="flex-1 bg-[#4A1515] text-white p-4 rounded-full font-bold">Continuar</button></div>
+</div>
+
+<div id="s4" class="step hidden">
+<h2 class="font-bold text-lg mb-3">Verificación Final</h2>
+<label class="dashed-box rounded-[16px] p-4 flex items-center justify-between mb-3 cursor-pointer"><div class="flex items-center gap-3"><div class="w-9 h-9 bg-white rounded-lg flex items-center justify-center border">🤳</div><div><p class="font-bold text-[14px]">Selfie con INE (Tomate una Selfie con tu INE al Frente)</p></div></div><div id="b4" class="file-btn"><input type="file" id="selfie" accept="image/*" capture="user" class="hidden" onchange="ok('b4')">Cámara 📸</div></label>
+<input id="recom" class="input-field mb-3" placeholder="Recomendado por:">
+<div class="bg-zinc-100 text-center p-3 rounded-xl mb-4 font-mono text-sm font-bold">ID: Se genera al enviar</div>
+<div class="flex gap-2"><button onclick="nextStep(3)" class="w-1/3 bg-zinc-100 p-4 rounded-full">Atrás</button><button id="btnEnviar" onclick="enviar()" class="flex-1 bg-[#4A1515] text-white p-4 rounded-full font-bold">Enviar</button></div>
+<p id="status" class="text-center text-xs mt-3 text-gray-500"></p>
+</div>
+
+<div id="s5" class="step hidden text-center py-10"><div class="w-20 h-20 bg-[#4A1515] text-white rounded-full flex items-center justify-center text-4xl mx-auto mb-4">✓</div><h2 class="text-2xl font-black mb-2">Gracias por confiar en CrediPagos</h2><p class="text-gray-600 mb-2">Solicitud <span id="finalID" class="font-bold text-black"></span> recibida</p><button onclick="window.open('https://wa.me/529996450493','_blank')" class="w-full bg-[#25D366] text-white p-4 rounded-full font-bold mt-4">WhatsApp 999 645 0493</button></div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxeunquMcg1Ova7g-IU5p3nME8YxnT3DGSoMQa8OFodoJYEDoCFC0iDZirhwui3XOta9g/exec";
+const estados = ["Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco","Estado de México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"];
+const municipiosPorEstado = {
+"Tabasco": ["Balancán","Cárdenas","Centla","Centro","Comalcalco","Cunduacán","Emiliano Zapata","Huimanguillo","Jalapa","Jalpa de Méndez","Jonuta","Macuspana","Nacajuca","Paraíso","Tacotalpa","Teapa","Tenosique"],
+"Chiapas": ["Tuxtla Gutiérrez","Tapachula","San Cristóbal de las Casas","Comitán","Palenque","Ocosingo","Villaflores","Chiapa de Corzo","Cintalapa","Ocozocoautla"],
+"Veracruz": ["Veracruz","Xalapa","Coatzacoalcos","Córdoba","Orizaba","Poza Rica","Minatitlán","Boca del Río","Tuxpan","San Andrés Tuxtla"],
+"Ciudad de México": ["Álvaro Obregón","Azcapotzalco","Benito Juárez","Coyoacán","Cuajimalpa","Cuauhtémoc","Gustavo A. Madero","Iztacalco","Iztapalapa","Miguel Hidalgo","Tlalpan","Xochimilco","Venustiano Carranza"],
+"Jalisco": ["Guadalajara","Zapopan","Tlaquepaque","Tonalá","Puerto Vallarta","Tlajomulco"]
+};
+function initEstados(){const sel=document.getElementById('estado');estados.forEach(e=>{let o=document.createElement('option');o.value=e;o.textContent=e;sel.appendChild(o);});}
+function cargarMunicipios(){
+  const estado=document.getElementById('estado').value;
+  const cont=document.getElementById('municipio');
+  if(cont.tagName==='INPUT') return;
+  cont.innerHTML=''; cont.disabled=false;
+  let lista=municipiosPorEstado[estado];
+  if(!lista){
+    let input=document.createElement('input');
+    input.id='municipio'; input.className='input-field mb-2'; input.placeholder='Escribe tu Municipio de '+estado;
+    cont.replaceWith(input);
+    return;
+  }
+  cont.innerHTML='<option value="">Selecciona Municipio</option>';
+  lista.forEach(m=>{let o=document.createElement('option');o.value=m;o.textContent=m;cont.appendChild(o);});
+}
+initEstados();
+function nextStep(n){document.querySelectorAll('.step').forEach(s=>s.classList.add('hidden'));document.getElementById('s'+n).classList.remove('hidden');document.getElementById('pasoNum').innerText=n;document.getElementById('bar').style.width=n*20+'%';window.scrollTo(0,0);}
+function ok(id){document.getElementById(id).innerHTML='✅ Listo';}
+async function toB64(file, tipo){
+  if(!file) return '';
+  const base = await new Promise(res=>{
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => res('');
+    r.readAsDataURL(file);
+    setTimeout(()=>res(''), 5000);
+  });
+  if(!base) return '';
+  return await new Promise(res=>{
+    const img = new Image();
+    img.onload = ()=>{
+      try{
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        // MÁXIMA COMPRESIÓN LEGIBLE
+        let maxW = tipo === 'ine'? 800 : 500;
+        let quality = tipo === 'ine'? 0.5 : 0.35;
+        if(w > maxW || h > maxW){
+          if(w > h){ h *= maxW/w; w = maxW; }else{ w *= maxW/h; h = maxW; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        res(canvas.toDataURL('image/jpeg', quality));
+      }catch(e){ res(base); }
+    };
+    img.onerror = () => res(base);
+    img.src = base;
+    setTimeout(()=>res(base), 4000);
+  });
+}
+async function enviar(){
+  let nom=document.getElementById('nombre').value.trim();
+  let apP=document.getElementById('apP').value.trim();
+  let apM=document.getElementById('apM').value.trim();
+  let tel=document.getElementById('tel').value.trim();
+  if(!nom||!apP||!tel){alert('Falta Nombre y Teléfono');return;}
+  let id=(nom[0]+apP[0]).toUpperCase()+tel.slice(-4)+'-'+Date.now().toString().slice(-4);
+  let btn=document.getElementById('btnEnviar');
+  let st=document.getElementById('status');
+  btn.disabled=true; btn.innerText='Comprimiendo...'; st.innerText='Comprimiendo fotos...';
+  let municipioVal=document.getElementById('municipio').value;
+  let estadoVal=document.getElementById('estado').value;
+  let direccionCompleta=`${document.getElementById('calle').value} ${document.getElementById('numero').value}, ${document.getElementById('colonia').value}, CP ${document.getElementById('cp').value}, ${municipioVal}, ${estadoVal}`;
+let ine1=await toB64(document.getElementById('ine1').files[0], 'ine');
+let ine2=await toB64(document.getElementById('ine2').files[0], 'ine');
+let comp=await toB64(document.getElementById('comp').files[0], 'normal');
+let selfie=await toB64(document.getElementById('selfie').files[0], 'normal');  st.innerText='Enviando...';
+  let payload={
+    id:id, nombreCompleto: nom+' '+apP+' '+apM, tel:tel, monto:document.getElementById('monto').value,
+    calle:document.getElementById('calle').value, numero:document.getElementById('numero').value, colonia:document.getElementById('colonia').value, cp:document.getElementById('cp').value, estado:estadoVal, municipio:municipioVal, direccion:direccionCompleta,
+    refDom:document.getElementById('refDom').value, ocup:document.getElementById('ocup').value, ingreso:document.getElementById('ingreso').value, dirTrab:document.getElementById('dirTrab').value, antig:document.getElementById('antig').value,
+    r1nom:document.getElementById('r1nom').value, r1tel:document.getElementById('r1tel').value, r2nom:document.getElementById('r2nom').value, r2tel:document.getElementById('r2tel').value, recom:document.getElementById('recom').value,
+    ine1:ine1, ine2:ine2, comp:comp, selfie:selfie
+  };
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    setTimeout(()=>{document.getElementById('finalID').innerText=id; nextStep(5);},1500);
+  }catch(e){st.innerText='Error: '+e.message; btn.disabled=false; btn.innerText='Reintentar';}
+}
+</script>
+</body>
+</html>
