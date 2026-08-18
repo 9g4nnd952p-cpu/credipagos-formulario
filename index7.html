@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrediPagos - Solicitud</title>
+<style>
+body{font-family:Arial;background:#f4f6f9;margin:0;padding:15px}
+.card{max-width:520px;margin:auto;background:white;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.step{display:none}.step.active{display:block}
+input,select{width:100%;padding:12px;margin:6px 0 12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+button{width:100%;padding:14px;background:#0d6efd;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold}
+button:disabled{background:gray}
+#status{margin-top:10px;text-align:center;font-size:14px;color:#333}
+</style>
+</head>
+<body>
+<div class="card">
+<div id="s1" class="step active">
+<h2>Datos Personales</h2>
+<input id="nombre" placeholder="Nombre">
+<input id="apP" placeholder="Apellido Paterno">
+<input id="apM" placeholder="Apellido Materno">
+<input id="tel" placeholder="Tel / WhatsApp" type="tel">
+<input id="monto" placeholder="Monto Solicitado" type="number">
+<button onclick="nextStep(2)">Siguiente</button>
+</div>
+
+<div id="s2" class="step">
+<h2>Domicilio</h2>
+<input id="calle" placeholder="Calle">
+<input id="numero" placeholder="Número">
+<input id="colonia" placeholder="Colonia">
+<input id="cp" placeholder="CP">
+<input id="estado" placeholder="Estado" value="Tabasco">
+<input id="municipio" placeholder="Municipio" value="Huimanguillo">
+<input id="refDom" placeholder="Referencia del domicilio">
+<button onclick="nextStep(3)">Siguiente</button>
+</div>
+
+<div id="s3" class="step">
+<h2>Trabajo</h2>
+<input id="ocup" placeholder="Ocupación">
+<input id="ingreso" placeholder="Ingreso mensual">
+<input id="dirTrab" placeholder="Dirección de trabajo">
+<input id="antig" placeholder="Antigüedad">
+<button onclick="nextStep(4)">Siguiente</button>
+</div>
+
+<div id="s4" class="step">
+<h2>Referencias y Fotos</h2>
+<input id="r1nom" placeholder="Ref 1 Nombre"><input id="r1tel" placeholder="Ref 1 Tel">
+<input id="r2nom" placeholder="Ref 2 Nombre"><input id="r2tel" placeholder="Ref 2 Tel">
+<input id="recom" placeholder="¿Quién te recomendó?">
+
+<label>INE Frente</label><input id="ine1" type="file" accept="image/*">
+<label>INE Reverso</label><input id="ine2" type="file" accept="image/*">
+<label>Comprobante</label><input id="comp" type="file" accept="image/*">
+<label>Selfie con INE</label><input id="selfie" type="file" accept="image/*">
+
+<button id="btnEnviar" onclick="enviar()">Enviar Solicitud</button>
+<div id="status"></div>
+</div>
+
+<div id="s5" class="step">
+<h2>¡Gracias!</h2>
+<p>Tu solicitud fue enviada con folio:</p>
+<h2 id="finalID"></h2>
+<p>Te contactamos por WhatsApp en breve.</p>
+</div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgFEeb_WT6GQodpeJ_bInZkITHsBKqxYkpNeP7-_V_B5_5XlcFHLDEtpNNlVcMweAzMQ/exec";
+
+function nextStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ESTA ES LA COMPRESION DEFINITIVA QUE NO SE CUELGA
+async function toB64(file, tipo){
+  if(!file) return '';
+  const base = await new Promise(res=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = ()=>res('');
+    r.readAsDataURL(file);
+  });
+  if(!base) return '';
+
+  return await new Promise(res=>{
+    const img = new Image();
+    let ok = false;
+    const done = (v)=>{ if(!ok){ ok=true; res(v); } };
+    img.onload = ()=>{
+      try{
+        const c = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        let max = tipo==='ine'? 700 : 380;
+        let q = tipo==='ine'? 0.38 : 0.22;
+        if(w > max || h > max){
+          if(w>h){ h *= max/w; w = max; } else { w *= max/h; h = max; }
+        }
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        done(c.toDataURL('image/jpeg', q));
+      }catch(e){ done(base); }
+    };
+    img.onerror = ()=>done(base);
+    img.src = base;
+    setTimeout(()=>done(base), 2500);
+  });
+}
+
+async function enviar(){
+  let nom=document.getElementById('nombre').value.trim();
+  let apP=document.getElementById('apP').value.trim();
+  let tel=document.getElementById('tel').value.trim();
+  if(!nom||!apP||!tel){alert('Falta Nombre, Apellido y Tel');return;}
+  let id=(nom[0]+apP[0]).toUpperCase()+tel.slice(-4)+'-'+Date.now().toString().slice(-4);
+  let btn=document.getElementById('btnEnviar');
+  let st=document.getElementById('status');
+  btn.disabled=true; btn.innerText='Enviando...';
+
+  try{
+    st.innerText='Comprimiendo 1/4...';
+    let ine1=await toB64(document.getElementById('ine1').files[0], 'ine');
+    st.innerText='Comprimiendo 2/4...';
+    let ine2=await toB64(document.getElementById('ine2').files[0], 'ine');
+    st.innerText='Comprimiendo 3/4...';
+    let comp=await toB64(document.getElementById('comp').files[0], 'normal');
+    st.innerText='Comprimiendo 4/4...';
+    let selfie=await toB64(document.getElementById('selfie').files[0], 'normal');
+
+    st.innerText='Enviando a Google...';
+    let payload={
+      id:id,
+      nombreCompleto: document.getElementById('nombre').value+' '+document.getElementById('apP').value+' '+document.getElementById('apM').value,
+      tel:tel, monto:document.getElementById('monto').value,
+      calle:document.getElementById('calle').value, numero:document.getElementById('numero').value, colonia:document.getElementById('colonia').value, cp:document.getElementById('cp').value, estado:document.getElementById('estado').value, municipio:document.getElementById('municipio').value,
+      refDom:document.getElementById('refDom').value, ocup:document.getElementById('ocup').value, ingreso:document.getElementById('ingreso').value, dirTrab:document.getElementById('dirTrab').value, antig:document.getElementById('antig').value,
+      r1nom:document.getElementById('r1nom').value, r1tel:document.getElementById('r1tel').value, r2nom:document.getElementById('r2nom').value, r2tel:document.getElementById('r2tel').value, recom:document.getElementById('recom').value,
+      ine1:ine1, ine2:ine2, comp:comp, selfie:selfie
+    };
+
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    document.getElementById('finalID').innerText=id;
+    nextStep(5);
+  }catch(e){
+    st.innerText='Error: '+e.message;
+    btn.disabled=false; btn.innerText='Reintentar';
+  }
+}
+</script>
+</body>
+</html>
